@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "outlook-mcp"
+version = "0.3.1"
+description = "MCP server ket noi Outlook co dien (desktop) qua COM - RIKCO"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp==2.3.0",        # MCPServer (FastMCP cu) cua mcp 2.x - pin ban da kiem thu
+    "pydantic>=2,<3",    # Field(ge, le) cho gioi han tham so tool
+    "pywin32==312",
+    # phu thuoc gian tiep: pin trong constraints.txt (install.ps1 dung -c)
+]
+classifiers = ["Operating System :: Microsoft :: Windows"]
+
+[project.scripts]
+outlook-mcp = "outlook_mcp.server:main"
+
+[tool.setuptools]
+packages = ["outlook_mcp"]

@@ -1,0 +1,15 @@
+# Moi truong Python va file sinh ra khi build / chay
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+
+# Goi phat hanh: dua len GitHub Releases, khong commit vao repo
+dist/
+
+# File tam cua editor / he dieu hanh
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
