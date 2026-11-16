@@ -22,7 +22,7 @@ Không có tool nào gửi mail: thư soạn ra nằm trong Drafts, bạn tự m
    file `outlook-mcp-<phiên bản>-windows.zip` và `.zip.sha256`.
 2. Đối chiếu mã SHA256 (giá trị in ra phải trùng nội dung file `.sha256`):
    ```bash
-   Get-FileHash .\outlook-mcp-0.3.1-windows.zip
+   Get-FileHash .\outlook-mcp-0.3.2-windows.zip
    ```
 3. Giải nén, mở PowerShell trong thư mục giải nén, chạy:
    ```bash
@@ -34,15 +34,23 @@ Không có tool nào gửi mail: thư soạn ra nằm trong Drafts, bạn tự m
    ```bash
    & "$env:LOCALAPPDATA\outlook-mcp\.venv\Scripts\outlook-mcp.exe" --check
    ```
-5. Đăng ký với Claude:
-   - **Claude Code:**
+5. Đăng ký với Claude. **Claude Code và Claude Desktop (Chat, Cowork) dùng hai file cấu hình riêng**:
+   đăng ký ở chỗ nào thì chỉ chỗ đó thấy tool. Muốn dùng ở cả hai thì đăng ký cả hai.
+   - **Claude Code** (ghi vào `%USERPROFILE%\.claude.json`):
      ```bash
      claude mcp add --scope user outlook -- "%LOCALAPPDATA%\outlook-mcp\.venv\Scripts\outlook-mcp.exe"
      ```
-   - **Claude Desktop:** thêm vào `claude_desktop_config.json` (Settings → Developer → Edit Config; bản cài từ
-     Microsoft Store để file ở `%LOCALAPPDATA%\Claude-Data\claude_<mã>\claude_desktop_config.json`):
+     Kiểm tra: `claude mcp get outlook` phải báo `Connected`.
+   - **Claude Desktop – Chat / Cowork:** thêm mục `mcpServers` vào `claude_desktop_config.json`
+     (Settings → Developer → Edit Config). Vị trí file tùy bản cài:
+     - bản cài từ claude.ai: `%APPDATA%\Claude\claude_desktop_config.json`
+     - một số bản Microsoft Store: `%LOCALAPPDATA%\Claude-Data\claude_<mã>\claude_desktop_config.json`
+
+     File này đã có sẵn các thiết lập khác (`preferences`…): **sao lưu trước, chỉ thêm khóa `mcpServers`**,
+     không xóa nội dung cũ:
      ```json
      {
+       "preferences": { "...": "giữ nguyên" },
        "mcpServers": {
          "outlook": {
            "command": "C:\\Users\\<tên>\\AppData\\Local\\outlook-mcp\\.venv\\Scripts\\outlook-mcp.exe",
@@ -51,8 +59,16 @@ Không có tool nào gửi mail: thư soạn ra nằm trong Drafts, bạn tự m
        }
      }
      ```
-     Rồi thoát hẳn Claude Desktop (chuột phải icon ở khay hệ thống → Quit) và mở lại.
-6. Thử: *"Liệt kê 5 thư mới nhất trong Inbox"*.
+     Rồi **thoát hẳn** Claude Desktop (chuột phải icon ở khay hệ thống → Quit, đóng cửa sổ là chưa đủ) và mở lại.
+     Claude Desktop ghi file này liên tục khi đang chạy; nếu mở lại không thấy tool `outlook`, mở file kiểm tra
+     mục `mcpServers` còn không (có thể bị ghi đè), thêm lại khi app đã thoát hẳn.
+   - **Lưu ý đường dẫn khi cài từ bên trong Claude Desktop bản Microsoft Store:** nếu bạn nhờ Claude (tab Code /
+     Cowork) chạy `install.ps1` hoặc tạo venv, Windows chuyển hướng `%LOCALAPPDATA%` vào thư mục riêng của app,
+     nên server thực tế nằm ở
+     `%LOCALAPPDATA%\Packages\Claude_<mã>\LocalCache\Local\outlook-mcp\.venv\Scripts\outlook-mcp.exe`.
+     Đăng ký bằng **đường dẫn thực tế này** (xem dòng `Actual location` khi tạo venv). Gỡ app Claude sẽ xóa luôn
+     thư mục đó, cần cài lại. Chạy `install.ps1` từ PowerShell thường (ngoài Claude) thì không bị chuyển hướng.
+6. Thử: *"Liệt kê 5 thư mới nhất trong Inbox"*. Sau khi đăng ký phải mở phiên/cuộc trò chuyện mới mới thấy tool.
 
 Tùy chọn của `install.ps1`: `-InstallDir` (nơi cài), `-Python` (chỉ định python.exe), `-Wheelhouse` (cài offline từ
 thư mục chứa sẵn file `.whl` phụ thuộc), `-Force` (xóa môi trường cũ rồi cài lại). Cập nhật: chạy `install.ps1`
@@ -174,12 +190,15 @@ nháp nếu bạn không yêu cầu việc đó.
   Mark-of-the-Web, thư nháp có `warnings` đầy đủ.
 - Gọi qua giao thức MCP stdio: initialize, list_tools (10 tool, schema có min/max), lỗi trả về `isError`.
 - Gói cài: cài từ zip vào môi trường mới, kiểm checksum, phát hiện được file trong gói bị sửa.
+- Python 3.12.10 (Windows 11, Outlook 16, `mcp` 2.3.0): cài từ mã nguồn, `--check`, `outlook_search_mail`
+  (thư chưa đọc), `outlook_get_mail` chạy đúng; đăng ký Claude Code (`claude mcp add`) báo `Connected`.
 
 Chưa kiểm chứng:
 
 - `outlook_list_events` và `outlook_search_contacts` trên dữ liệu thật (máy thử có lịch và danh bạ trống).
 - Tài khoản Exchange/Microsoft 365 (đổi địa chỉ dạng `/o=...` sang SMTP) và profile nhiều hộp thư.
-- Python cũ hơn 3.14, cài offline bằng `-Wheelhouse`.
+- Các tool còn lại trên Python 3.12; Python 3.10–3.11; cài offline bằng `-Wheelhouse`.
+- Claude Desktop Chat/Cowork nạp server qua `claude_desktop_config.json` (đã thêm cấu hình, chưa thử gọi tool từ Cowork).
 - Đọc `Body` thư IMAP có đổi trạng thái đã đọc / gửi read receipt không; CVE của phụ thuộc (chưa chạy `pip-audit`).
 
 ## 8. Giấy phép
